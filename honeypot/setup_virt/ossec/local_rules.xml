@@ -1,0 +1,330 @@
+<!-- @(#) $Id: ./etc/rules/local_rules.xml, 2011/09/08 dcid Exp $
+
+  -  Example of local rules for OSSEC.
+  -
+  -  Copyright (C) 2009 Trend Micro Inc.
+  -  All rights reserved.
+  -
+  -  This program is a free software; you can redistribute it
+  -  and/or modify it under the terms of the GNU General Public
+  -  License (version 2) as published by the FSF - Free Software
+  -  Foundation.
+  -
+  -  License details: http://www.ossec.net/en/licensing.html
+  -->
+
+
+<!-- Modify it at your will. -->
+
+<group name="local,syslog,">
+
+  <rule id="100040" level="0">
+    <decoded_as>snoopy</decoded_as>
+    <description>Ignore Snoopy logger events</description>
+  </rule>
+
+  <rule id="100200" level="0">
+    <decoded_as>bash_history</decoded_as>
+    <description>Ignore bash_history events</description>
+  </rule>
+
+  <rule id="100041" level="11">
+    <if_sid>100040</if_sid>
+    <match>/uname]|/top]|/htop]|/ps]|/df]|/du]|/lshw]|/dmidecode]|/lsmod]|/lspci]|/lscpu]|/hwinfo]|/lsscsi]|/lsusb]|/lsblk]|/pydf]|/fdisk]|/mount]|/free]|/proc/]|/hdparm]|/lsb_release]| /etc/issue </match>
+    <description>Reading host configuration</description>
+    <group>host_config</group>
+  </rule>
+
+  <rule id="100042" level="11">
+    <if_sid>100040</if_sid>
+    <regex>^\.*/etc/\w*release$|^\.*/etc/\w*version$</regex>
+    <description>Reading host files</description>
+    <group>host_config</group>
+  </rule>
+
+  <rule id="100043" level="0">
+    <if_sid>100040</if_sid>
+    <match>/bash]|/sh]|/ash]|/dash]|/ksh]|/pdksh]|/mksh]|/zsh]|/csh]|/tcsh]|/fish]</match>
+    <description>Ignore shell login</description>
+  </rule>
+
+  <rule id="100044" level="11" ignore="2">
+    <if_group>host_config</if_group>
+    <description>Reading Host config</description>
+  </rule>
+
+  <rule id="100160" level="11" ignore="1">
+    <if_sid>100040</if_sid>
+    <match>/w]|/last]|/lastb]|/who]|/users]|/finger]|/whoami]</match>
+    <description>Get logged-in Users</description>
+  </rule>
+
+
+  <rule id="100050" level="0">
+    <if_sid>100041, 100042</if_sid>
+    <match>[uid:0 </match>
+    <description>Ignoring root configuration reads</description>
+  </rule>
+
+
+  <rule id="100052" level="0">
+    <if_sid>100041</if_sid>
+    <match>uname -o|uname -s|ps -ef</match>
+    <description>Ignoring bash unames</description>
+  </rule>
+
+
+  <rule id="100051" level="0">
+    <if_sid>100041, 100042, 100160</if_sid>
+    <match> tty:(none) </match>
+    <description>Ignoring cron for reading host config</description>
+  </rule>
+
+  <rule id="100100" level="11" ignore="1">
+    <if_sid>100040</if_sid>
+    <regex>chkconfig \.* off</regex>
+    <description>Logging turned off</description>
+  </rule>
+
+  <rule id="100101" level="11" ignore="1">
+    <if_sid>100040</if_sid>
+    <regex>rm \.*.bash_history|ln /dev/null ~/.bash_history</regex>
+    <description>Logging turned off</description>
+  </rule>
+
+  <rule id="100210" level="11" ignore="1">
+    <if_sid>100200</if_sid>
+    <match>unset HISTFILE|export HISTFILE|export HISTFILESIZE|export HISTSIZE|history -c</match>
+    <description>Disable/Clear Bash History</description> 
+  </rule>
+
+  <rule id="100060" level="11">
+    <if_sid>100040</if_sid>
+    <regex>mkdir]: \.*mkdir \.*.\.*</regex>
+    <description>Directory added with '.' in path</description>
+  </rule>
+
+  <rule id="100061" level="0">
+    <if_sid>100060</if_sid>
+    <regex>mkdir]: \.*mkdir \.*./\.*</regex>
+    <description>Ignore mkdir with './'</description>
+  </rule>
+
+  <rule id="100070" level="11" ignore="600">
+    <if_sid>100040</if_sid>
+    <match>/gcc]|/g++]|/cmake]|/gc]|/gccgo]|/javac]|/gcj]|/pcc]|/llvm]|/llc]|/clang]|/gfortran]|/gnat]|/gpc]|/gdc]|/ghdl]</match>
+    <description>User compiling code</description>
+  </rule>
+
+  <rule id="100080" level="0">
+    <if_sid>100040</if_sid>
+    <regex>/wget]:</regex>
+    <description>wget</description>
+  </rule>
+
+  <rule id="100081" level="0">
+    <if_sid>100040</if_sid>
+    <regex>/curl]:</regex>
+    <description>curl</description>
+  </rule>
+
+  <rule id="100090" level="11">
+    <if_sid>100080,100081</if_sid>
+    <regex>.bash$|.tcsh$|.csh$|.zsh$|.fash$|.aesh$|.ksh$|.perl$|.al$|.pl$|.pm$|.rb$|.py$|.wsgi$|.awk$|.tcl$|.tk$|.lua$|.js$|.php$|.exe$|.dll$|.c$|.cpp$|.cc$|.java$|.vbs$|.cs$|.net$|.m$|.frm$</regex>
+    <description>wget/curl download sensitive extension</description>
+  </rule>
+
+  <rule id="100047" level="0">
+    <if_sid>100060</if_sid>
+    <regex>/.local/share/applications</regex>
+    <description>Ignore /.local/share/applications</description>
+  </rule>
+
+  <rule id="100010" level="11" ignore="1">
+    <match>Kernel logging (proc) stopped.</match>
+    <description>Logging stopped</description>
+  </rule>
+
+  <rule id="102900" level="11">
+    <if_sid>2901, 2932</if_sid>
+    <match> 0trace | acccheck | ace-voip | afflib-tools | aircrack-ng | amap | android-sdk | apache2 | apache-users | apktool | arachni | arduino | armitage | arping | arp-scan | arpwatch | asleap | automater | autopsy | backdoor-factory | bbqsql | bed | beef-xss | bing-ip2hosts | binwalk | blindelephant | bluelog | bluemaho | bluepot | blueranger | bluesnarfer | bluez | bluez-hcidump | braa | btscanner | bulk-extractor | bully | burpsuite | cabextract | cadaver | casefile | cdpsnarf | cewl | cgpt | chirp | chkrootkit | chntpw | cisco-global-exploiter | cisco-ocs | cisco-torch | clang | clusterd | cmospwd | cookie-cadger | copy-router-config | cowpatty | crackle | creddump | creepy | crunch | cryptcat | cryptsetup | cuckoo | curlftpfs | cutycapt | cymothoa | darkstat | davtest | dbd | dbpwaudit | dc3dd | dcfldd | ddrescue | deblaze | device-pharmer | dex2jar | dff | dhcpig | dirb | dirbuster | dissy | distorm3 | dmitry | dnmap | dns2tcp | dnschef | dnsenum | dnsmap | dnsrecon | dnstracer | dnswalk | doona | dos2unix | dotdotpwn | dradis | driftnet | dsniff | dumpzilla | eapmd5pass | edb-debugger | enum4linux | enumiax | ethtool | ettercap-graphical | ewf-tools | exiv2 | exploitdb | extundelete | eyewitness</match>
+    <description>Downloading security tools</description>
+    <group>config_changed,</group>
+  </rule>
+
+  <rule id="102901" level="11">
+    <if_sid>2901, 2932</if_sid>
+    <match>fcrackzip | fern-wifi-cracker | ferret-sidejack | fierce | fiked | fimap | findmyhash | firmware-mod-kit | flasm | foremost | fping | fragroute | fragrouter | framework2 | freeradius | ftester | funkload | galleta | gdb | ghost-phisher | giskismet | gnuradio | golismero | goofile | gparted | gpp-decrypt | gqrx | grabber | gr-iqbal | gr-osmosdr | guymager | hackersh | hackrf | hamster-sidejack | hashcat | hashcat-utils | hashid | hash-identifier | hexinject | hexorbase | hotpatch | hping3 | htshells | httprint | http-tunnel | hydra | hydra-gtk | i2c-tools | iaxflood | ifenslave | ikat | ike-scan | inetsim | intersect | intrace | inundator | inviteflood | iodine | iphone-backup-analyzer | irpas | ismtp | isr-evilgrade | iw | jad | javasnoop | jboss-autopwn | jd-gui | john | johnny | joomscan | jsql | kalibrate-rtl | kali-linux | kali-linux-forensic | kali-linux-full | kali-linux-gpu | kali-linux-pwtools | kali-linux-rfid | kali-linux-sdr | kali-linux-top10 | kali-linux-voip | kali-linux-web | kali-linux-wireless | keepnote | keimpx | killerbee | kismet | laudanum | lbd | leafpad | libfindrtp | libfreefare-bin | libgnuradio-baz | libhivex-bin | libnfc-bin | linux-exploit-suggester | lvm2 | lynis </match>
+    <description>Downloading security tools</description>
+    <group>config_changed,</group>
+  </rule>
+
+  <rule id="102902" level="11">
+    <if_sid>2901, 2932</if_sid>
+    <match> macchanger | magicrescue | magictree | maltego | maltego-teeth | maskprocessor | masscan | mc | md5deep | mdbtools | mdk3 | medusa | memdump | metagoofil | metasploit | metasploit-framework | mfcuk | mfoc | mfterm | mimikatz | minicom | miranda | miredo | missidentify | mitmproxy | multiforcer | multimac | multimon-ng | mysql-server | nasm | nbtscan | ncat-w32 | ncrack | ncurses-hexedit | netdiscover | netmask | netsed | netsniff-ng | netwag | nfspy | ngrep | nikto | nipper-ng | nishang | nmap | oclgausscrack | oclhashcat | ohrwurm | ollydbg | onesixtyone | openvas | ophcrack | ophcrack-cli | oscanner | owasp-mantra-ff | p0f | p7zip-full | pack | padbuster | paros | parsero | parted | pasco | passing-the-hash | patator | pdfid | pdf-parser | pdgmail | peepdf | perl-cisco-copyconfig | pev | php5 | php5-mysql | phrasendrescher | pipal | plecost | polenum | powerfuzzer | powersploit | protos-sip | proxychains | proxystrike | proxytunnel | ptunnel | pwnat | pyrit | python-capstone | python-halberd | python-impacket | python-rfidiot | python-scapy | radare2 | rainbowcrack | rake | ratproxy | rcracki-mt | rdd | readpst | reaver | rebind | recon-ng | recordmydesktop | recoverjpeg | recstudio | redfang | redsocks | reglookup | regripper | responder | rfcat | rfkill | rifiuti | rifiuti2 | rsmangler | rtlsdr-scanner | rtpbreak | rtpflood | rtpinsertsound | rtpmixsound</match>
+    <description>Downloading security tools</description>
+    <group>config_changed,</group>
+  </rule>
+
+  <rule id="102903" level="11">
+    <if_sid>2901, 2932</if_sid>
+    <match>safecopy | sakis3g | samdump2 | sandi | sbd | scalpel | scrounge-ntfs | sctpscan | seclists | sendemail | set | sfuzz | shellnoob | sidguesser | siege | siparmyknife | sipcrack | sipp | sipvicious | skipfish | sleuthkit | smali | smtp-user-enum | sniffjoke | snmpcheck | socat | spectools | spike | spooftooph | sqldict | sqldict | sqlitebrowser | sqlmap | sqlninja | sqlsus | sslcaudit | ssldump | sslh | sslscan | sslsniff | sslsplit | sslstrip | sslyze | statsprocessor | stunnel4 | suckless-tools | sucrack | swaks | t50 | tcpdump | tcpflow | tcpick | tcpreplay | teamsploit | termineter | tftpd32 | thc-ipv6 | thc-pptp-bruter | thc-ssl-dos | theharvester | tlssled | tnscmd10g | truecrack | truecrypt | twofi | u3-pwn | ua-tester | ubertooth | udptunnel | uhd-host | uhd-images | unetbootin | unicornscan | uniscan | unix-privesc-check | unrar | upx-ucl | urlcrazy | vboot-kernel-utils | vboot-utils | vega | veil-catapult | veil-evasion | vim-gtk | vinetto | vlan | voiphopper | volafox | volatility | vpnc | w3af | waffit | wapiti | wce | webacoo | webhandler | webscarab | webshag | webshells | webslayer | websploit | weevely | wfuzz | whatweb | wifi-honey | wifitap | wifite | windows-binaries | winexe | wireshark | wol-e | wordlists | wpscan | wvdial | xpdf | xplico | xprobe | xspy | xsser | xtightvncviewer | yersinia | zaproxy | zenmap | zim </match>
+    <description>Downloading security tools</description>
+    <group>config_changed,</group>
+  </rule>
+
+  <rule id="100536" level="11">
+    <if_sid>530</if_sid>
+    <match>ossec: output: 'service --status-all 2>&1 | cut -d "]" -f2'</match>
+    <check_diff />
+    <description>System V services changed (service added/deleted)</description> 
+  </rule>
+
+  <rule id="100537" level="11">
+    <if_sid>530</if_sid>
+    <match>ossec: output: 'initctl list | cut -d "," -f1 | cut -d " " -f1'</match>
+    <check_diff />
+    <description>Upstart services changed (service added/deleted)</description> 
+  </rule>
+  
+  <rule id="100540" level="11" ignore="10">
+    <if_sid>100536, 100537</if_sid>
+    <description>Services changed (service added/deleted)</description> 
+  </rule>
+
+  <rule id="100538" level="11" ignore="720"> 
+    <if_sid>530</if_sid>
+    <match>ossec: output: 'who | cut -d ' ' -f1 | uniq | wc -w'</match>
+    <regex>2|3|4|5|6|7|8|9|\d+\d+</regex>
+    <description>Multiple login detected</description> 
+  </rule>
+
+  <rule id="100539" level="11" ignore="720">
+    <if_sid>530</if_sid>
+    <match>ossec: output: 'w -us | tail -n +3 | cut -c1-9,19-35,43- | sed -e "/:\|                 /d"'</match>
+    <regex>\.*\w+\s+ssh\s+\.*</regex>
+    <description>SSH Host jump detected</description> 
+  </rule>
+
+  <rule id="100550" level="7">
+    <if_sid>550,551,552,553,554</if_sid>
+    <match>/.ssh/</match>
+    <description>/.ssh/ directory changed</description> 
+  </rule>
+
+  <rule id="100551" level="11">
+    <if_sid>100550</if_sid>
+    <match>/authorized_keys'</match>
+    <description>authorized_keys file changed</description> 
+  </rule>
+
+  <rule id="100552" level="7">
+    <if_sid>550,551,552,553,554</if_sid>
+    <match>'/etc|'/usr/sbin|'/usr/bin|'/bin|'/sbin</match>
+    <description>System files changed</description> 
+  </rule>
+
+  <rule id="100110" level="11">
+    <decoded_as>rkhunter</decoded_as>
+    <match>Possible rootkits: </match>
+    <description>Possible rootkit(s)</description>
+  </rule>
+
+  <rule id="100111" level="0">
+    <if_sid>100110</if_sid>
+    <match>: 0</match>
+    <description>0 rootkits</description>
+  </rule>
+
+  <rule id="100112" level="11">
+    <decoded_as>rkhunter</decoded_as>
+    <match>Suspect files: </match>
+    <description>Suspect file(s)</description>
+  </rule>
+
+  <rule id="100113" level="0">
+    <if_sid>100112</if_sid>
+    <match>: 0</match>
+    <description>0 Suspect files</description>
+  </rule>
+
+
+  <rule id="100510" level="0">
+    <if_sid>510</if_sid>
+    <match>/dev/.blkid.tab|/dev/.blkid.tab.old</match>
+    <description>Ignore these files</description> 
+  </rule>
+
+  <rule id="105700" level="11" ignore="1">
+    <if_group>authentication_failed</if_group>
+    <description>Authentication Failed</description> 
+  </rule>
+
+  <rule id="105500" level="11">
+    <if_sid>5501</if_sid>
+    <match>session opened for user root</match>
+    <description>User successfully changed UID to root.</description>
+  </rule>
+
+  <rule id="105501" level="11" ignore="1">
+    <if_sid>105500,5303</if_sid>
+    <description>User successfully changed UID to root.</description>
+  </rule>
+
+  <rule id="554" level="7" overwrite="yes">
+    <category>ossec</category>
+    <decoded_as>syscheck_new_entry</decoded_as>
+    <description>File added to the system.</description>
+    <group>syscheck,</group>
+  </rule>
+
+  <rule id="1003" level="0" maxsize="1025" overwrite="yes">
+    <description>Non standard syslog message (size too large).</description>
+  </rule>  
+
+  <rule id="5501" level="3" ignore="1" overwrite="yes">
+    <if_sid>5500</if_sid>
+    <match>session opened for user </match>
+    <description>Login session opened.</description>
+    <group>authentication_success,</group>
+  </rule>
+
+  <rule id="105900" level="8" ignore="1">
+    <if_sid>5902</if_sid>
+    <description>New user added to the system</description>
+  </rule>
+
+  <rule id="105901" level="11">
+    <if_sid>105900</if_sid>
+    <regex>name=\w+\p+\w+|name=\w+\p+,|name=\p+\w+,|name=\p+,</regex>
+    <description>Weird User added</description>
+  </rule>
+
+
+
+  
+  
+  <!-- This example will ignore ssh failed logins for the user name XYZABC.
+    -->
+  <!--  
+  <rule id="100020" level="0">
+    <if_sid>5711</if_sid>
+    <user>XYZABC</user>
+    <description>Example of rule that will ignore sshd </description>
+    <description>failed logins for user XYZABC.</description>
+  </rule>
+  -->
+  
+  
+  <!-- Specify here a list of rules to ignore. -->
+  <!--
+  <rule id="100030" level="0">
+    <if_sid>12345, 23456, xyz, abc</if_sid>
+    <description>List of rules to be ignored.</description>
+  </rule>
+  -->
+   
+</group> <!-- SYSLOG,LOCAL -->
+
+
+<!-- EOF -->

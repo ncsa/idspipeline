@@ -1,0 +1,72 @@
+<decoder name="snoopy">
+  <program_name>^snoopy</program_name>
+</decoder>
+
+<decoder name="snoopy-exe">
+  <parent>snoopy</parent>
+  <regex offset="after_parent">username:(\S+) tty_username:(\S+) uid:\S+ \.*filename:(\S+)]: (\.*)$</regex>
+  <order>srcuser, dstuser, action, id</order>
+</decoder>
+
+<decoder name="bash_history">
+  <program_name>^bash_history</program_name>
+</decoder>
+
+<decoder name="bash_history_command">
+  <parent>bash_history</parent>
+  <regex offset="after_parent">: [user:(\d+)] (\.*)$</regex>
+  <order>dstuser, action</order>
+</decoder>
+
+<decoder name="rkhunter">
+  <prematch>^Rootkit Hunter: </prematch>
+  <regex offset="after_prematch">(\.+)</regex>
+  <order>action</order>
+</decoder>
+
+<decoder name="pam-user-session">
+  <parent>pam</parent>
+  <prematch>session \w+ </prematch>
+  <regex offset="after_prematch">^for user (\S+) by (\w*)</regex>
+  <order>srcuser, dstuser</order>
+</decoder>
+
+<decoder name="pam-user-password">
+  <parent>pam</parent>
+  <prematch>password \w+ </prematch>
+  <regex offset="after_prematch">^for (\S+)</regex>
+  <order>dstuser</order>
+</decoder>
+
+<decoder name="pam-user-password-fail">
+  <program_name>^login</program_name>
+  <prematch>FAILED LOGIN</prematch>
+  <regex offset="after_prematch">^\.+ FOR '(\S+)'</regex>
+  <order>dstuser</order>
+</decoder>
+
+
+<decoder name="useradd">
+  <program_name>useradd</program_name>
+  <regex>new user: name=(\S+),</regex>
+  <order>dstuser</order>
+</decoder>
+
+<decoder name="host-jump">
+  <parent>ossec</parent>
+  <!-- <regex offset="after_parent">\.*'w -us | cut\.*': (\S+) </regex> -->
+  <regex offset="after_parent">\.*'w -us \| \.*': (\S+) </regex>
+  <order>dstuser</order>
+</decoder>
+
+<decoder name="rkhunter">
+  <prematch>[\d\d:\d\d:\d\d] </prematch>
+  <regex offset="after_prematch">Suspect files: (\d+)|Possible rootkits: (\d+)</regex>
+  <order>action</order>
+</decoder>
+
+
+
+
+
+

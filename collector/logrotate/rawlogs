@@ -1,0 +1,27 @@
+/var/log/logstash/var/log/*.log*
+{
+        rotate 100
+        daily
+        missingok
+        notifempty
+        delaycompress
+        compress
+        create 640 logstash logstash
+        postrotate
+          reload rsyslog >/dev/null 2>&1 || true
+        endscript
+}
+/var/log/logstash/usr/local/bro/logs/current/*
+{
+        rotate 100
+        daily
+        missingok
+        notifempty
+        delaycompress
+        compress
+        create 640 logstash logstash
+        postrotate
+          reload rsyslog >/dev/null 2>&1 || true
+        endscript
+}
+

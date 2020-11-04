@@ -1,0 +1,24 @@
+#!/bin/sh
+
+case "$1" in
+status)
+  /var/ossec/bin/ossec-control status
+;;
+start)
+  /var/ossec/bin/ossec-control start
+;;
+stop)
+  /var/ossec/bin/ossec-control stop
+;;
+restart)
+  $0 stop && sleep 3
+  $0 start
+;;
+reload)
+  $0 stop
+  $0 start
+;;
+*)
+echo "Usage: $0 {status|start|stop|restart|reload}"
+exit 1
+esac
